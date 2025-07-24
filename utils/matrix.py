@@ -71,6 +71,40 @@ def covariance_matrix(X: np.ndarray) -> np.ndarray:
     except Exception as e:
         raise ValueError(f"Erro ao calcular a matriz de covariância: {e}")
     
+def principal_component_analysis(X: np.ndarray, n_components: int) -> np.ndarray:
+    """
+    Realiza Análise de Componentes Principais (PCA) em uma matriz.
+    
+    Args:
+        X (np.ndarray): Matriz de entrada (amostras x variáveis).
+        n_components (int): Número de componentes principais a serem retornados.
+        
+    Returns:
+        np.ndarray: Matriz transformada com os componentes principais.
+    """
+    try:
+        logger.debug("Iniciando PCA")
+        
+        # Calcular a matriz de covariância
+        cov_matrix = covariance_matrix(X)
+        
+        # Obter os autovalores e autovetores
+        eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
+        
+        # Ordenar os autovalores e autovetores
+        sorted_indices = np.argsort(eigenvalues)[::-1]
+        eigenvalues = eigenvalues[sorted_indices]
+        eigenvectors = eigenvectors[:, sorted_indices]
+        
+        # Selecionar os primeiros n componentes
+        principal_components = eigenvectors[:, :n_components]
+        
+        # Transformar os dados
+        X_transformed = X @ principal_components
+        logger.info("PCA concluído com sucesso")
+        return X_transformed
+    except Exception as e:
+        raise ValueError(f"Erro ao realizar PCA: {e}")
 
 if __name__ == "__main__":
     array_test = np.random.randn(4,4)
