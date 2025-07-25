@@ -41,28 +41,20 @@ def transpose_matrix(matrix: np.ndarray) -> np.ndarray:
     except Exception as e:
         raise ValueError(f"Erro ao transpor a matriz: {e}")
 
-def covariance_matrix(X: np.ndarray) -> np.ndarray:
+def covariance_matrix(X_centered: np.ndarray, n_amostras: int) -> np.ndarray:
     """
-    Calcula a matriz de covariância de uma matriz usando NumPy.
+    Calcula a matriz de covariância de uma matriz centralizada.
     
     Args:
-        X (np.ndarray): Matriz de entrada (amostras x variáveis).
+        X_centered (np.ndarray): Matriz de entrada já centralizada (amostras x variáveis).
+        n_amostras (int): Número de amostras.
         
     Returns:
         np.ndarray: Matriz de covariância.
     """
     try:
         logger.debug("Calculando matriz de covariância")
-        
-        if X.ndim != 2:
-            raise ValueError("A matriz de entrada deve ser bidimensional (2D)")
-        
-        # Centralizar os dados por coluna
-        media = np.mean(X, axis=0)
-        X_centered = X - media
 
-        # Matriz de covariância: (X^T X) / (n - 1)
-        n_amostras = X.shape[0]
         cov_matrix = (X_centered.T @ X_centered) / (n_amostras - 1)
 
         logger.info("Matriz de covariância calculada com sucesso")
@@ -83,10 +75,20 @@ def principal_component_analysis(X: np.ndarray, n_components: int) -> np.ndarray
         np.ndarray: Matriz transformada com os componentes principais.
     """
     try:
+        if n_components > min(X.shape):
+            raise ValueError(f"n_components ({n_components}) não pode ser maior que min(n_amostras, n_features) = {min(X.shape)}")
+        
         logger.debug("Iniciando PCA")
+
+        # Centralizar os dados por coluna
+        media = np.mean(X, axis=0)
+        X_centered = X - media
+
+        # Matriz de covariância: (X^T X) / (n - 1)
+        n_amostras = X.shape[0]
         
         # Calcular a matriz de covariância
-        cov_matrix = covariance_matrix(X)
+        cov_matrix = covariance_matrix(X_centered, n_amostras)
         
         # Obter os autovalores e autovetores
         eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
@@ -100,16 +102,16 @@ def principal_component_analysis(X: np.ndarray, n_components: int) -> np.ndarray
         principal_components = eigenvectors[:, :n_components]
         
         # Transformar os dados
-        X_transformed = X @ principal_components
+        X_transformed = X_centered @ principal_components
         logger.info("PCA concluído com sucesso")
         return X_transformed
     except Exception as e:
         raise ValueError(f"Erro ao realizar PCA: {e}")
 
 if __name__ == "__main__":
-    array_test = np.random.randn(4,4)
+    array_test = np.array([[1, 2], [3, 4]])
     print("Matriz original:")
     print(array_test)
-    cov_test = covariance_matrix(array_test)
-    print("Matriz de covariância:")
-    print(cov_test)
+    pca_test = principal_component_analysis(array_test, 2)
+    print("Matriz de PCA:")
+    print(pca_test)
