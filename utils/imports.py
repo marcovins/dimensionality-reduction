@@ -1,6 +1,9 @@
 from PIL import Image
 import numpy as np
 import logging, colorlog
+import matplotlib
+matplotlib.use('TkAgg')  # colocar no topo do seu script, antes de importar pyplot
+import matplotlib.pyplot as plt
 
 # Configuração do handler e do formatter colorido
 log_format = (

@@ -1,4 +1,4 @@
-from .imports import Image, np, logger
+from .imports import Image, np, logger, plt
 
 def read_image(image_path:str) -> np.ndarray:
     """
@@ -102,20 +102,29 @@ def to_pb(image_array: np.ndarray, threshold:int = 128) -> np.ndarray:
     except Exception as e:
         raise ValueError(f"Erro ao converter a imagem para formato de bytes: {e}")
     
-def to_rgb(image_array: np.ndarray) -> np.ndarray:
+def to_rgb(image_array: np.ndarray, with_color:bool = False) -> np.ndarray:
     """
     Converte um array NumPy representando uma imagem em preto e branco para RGB.
     
     Args:
         image_array (np.ndarray): Array NumPy representando a imagem em preto e branco.
-        
+        with_color (bool): Se True, a imagem recebera cores aleatórias.
     Returns:
         np.ndarray: Array NumPy representando a imagem convertida para RGB.
     """
     try:
+        if with_color:
+            logger.debug("Convertendo a imagem de bytes para RGB com cores aleatórias")
+            if image_array.ndim != 2:
+                image_array = to_gray(image_array)
+            # Cria uma imagem RGB com cores aleatórias
+            random_colors = np.random.randint(0, 256, size=(image_array.shape[0], image_array.shape[1], 3), dtype=np.uint8)
+            rgb_image = np.where(image_array[:, :, None] > 0, random_colors, 0)
+            logger.info("Imagem convertida para RGB com cores aleatórias")
+            return rgb_image
         logger.debug("Convertendo a imagem de bytes para RGB")
         if image_array.ndim != 2:
-            raise ValueError("O array de imagem deve ser bidimensional (preto e branco).")
+            image_array = to_gray(image_array)
         rgb_image = np.stack((image_array,) * 3, axis=-1)
         logger.info("Imagem convertida para RGB com sucesso")
         return rgb_image
@@ -123,15 +132,77 @@ def to_rgb(image_array: np.ndarray) -> np.ndarray:
     except Exception as e:
         raise ValueError(f"Erro ao converter a imagem para RGB: {e}")
     
+def show_image(image_array: np.ndarray, title: str = None) -> None:
+    """
+    Exibe um array NumPy representando uma imagem.
+    
+    Args:
+        image_array (np.ndarray): Array NumPy representando a imagem a ser exibida.
+        title (str, opcional): Título a ser exibido acima da imagem.
+    """
+    try:
+        if not isinstance(image_array, np.ndarray):
+            raise TypeError("A entrada deve ser um array NumPy.")
+
+        logger.debug("Exibindo a imagem")
+        plt.figure(figsize=(6, 6))
+        cmap = 'gray' if image_array.ndim == 2 else None
+        plt.imshow(image_array, cmap=cmap)
+        plt.axis('off')
+        if title:
+            plt.title(title)
+        plt.show()
+        logger.info("Imagem exibida com sucesso")
+    
+    except Exception as e:
+        raise ValueError(f"Erro ao exibir a imagem: {e}")
+    
+def show_images(images: list, titles: list = None) -> None:
+    """
+    Exibe uma lista de arrays NumPy representando imagens.
+    
+    Args:
+        images (list): Lista de arrays NumPy representando as imagens a serem exibidas.
+        titles (list, opcional): Lista de títulos a serem exibidos acima das imagens.
+    """
+    try:
+        if not isinstance(images, list) or not all(isinstance(img, np.ndarray) for img in images):
+            raise TypeError("A entrada deve ser uma lista de arrays NumPy.")
+        
+        logger.debug("Exibindo múltiplas imagens")
+        n = len(images)
+        plt.figure(figsize=(15, 5))
+        
+        for i, img in enumerate(images):
+            plt.subplot(1, n, i + 1)
+            cmap = 'gray' if img.ndim == 2 else None
+            plt.imshow(img, cmap=cmap)
+            plt.axis('off')
+            if titles and i < len(titles):
+                plt.title(titles[i])
+        
+        plt.tight_layout()
+        plt.show()
+        logger.info("Imagens exibidas com sucesso")
+    
+    except Exception as e:
+        raise ValueError(f"Erro ao exibir as imagens: {e}")
+    
 if __name__ == "__main__":
     # Exemplo de uso
     try:
-        img_array = read_image("data/raw/test.jpg")
-        img_array = np.array(img_array)
-        logger.info(f"Imagem lida com forma: {img_array.shape}")
-        grey_img = to_pb(img_array, 128)
-        save_image(grey_img, "pb_image.jpg")
-        rgb_img = to_rgb(grey_img)
-        save_image(rgb_img, "rgb_image.jpg")
+        img_array = read_image("data/raw/museu.jpg")
+        
+        gray_array = to_gray(img_array)
+        save_image(gray_array, "imagem_gray.jpg")
+
+        pb_array = to_pb(img_array)
+        save_image(pb_array, "imagem_pb.jpg")
+        
+        rgb_array = to_rgb(img_array, True)
+        save_image(rgb_array, "imagem_rgb.jpg")
+        show_images([img_array, gray_array, pb_array, rgb_array],
+            titles=["Original", "Gray", "PB", "RGB com cores aleatórias"])
+        
     except ValueError as e:
         logger.error(e)
