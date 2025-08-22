@@ -1,4 +1,4 @@
-from .imports import Image, np, logger, plt
+from utils.imports import Image, np, logger, plt
 
 def read_image(image_path:str) -> np.ndarray:
     """

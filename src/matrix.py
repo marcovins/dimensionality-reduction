@@ -1,5 +1,4 @@
-from .imports import np, logger
-from .image import read_image, save_image, to_pb
+from utils.imports import np, logger
 
 def matrix_multiply(matrix_a: np.ndarray, matrix_b: np.ndarray) -> np.ndarray:
     """
@@ -65,14 +64,14 @@ def covariance_matrix(X_centered: np.ndarray, n_amostras: int) -> np.ndarray:
     
 def principal_component_analysis(X: np.ndarray, n_components: int) -> np.ndarray:
     """
-    Realiza Análise de Componentes Principais (PCA) em uma matriz.
+    Realiza Análise de Componentes Principais (PCA) em uma matriz e a reconstrói.
     
     Args:
         X (np.ndarray): Matriz de entrada (amostras x variáveis).
-        n_components (int): Número de componentes principais a serem retornados.
+        n_components (int): Número de componentes principais a serem usados para a reconstrução.
         
     Returns:
-        np.ndarray: Matriz transformada com os componentes principais.
+        np.ndarray: Matriz reconstruída a partir dos n_components principais.
     """
     try:
         if n_components > min(X.shape):
@@ -103,8 +102,12 @@ def principal_component_analysis(X: np.ndarray, n_components: int) -> np.ndarray
         
         # Transformar os dados
         X_transformed = X_centered @ principal_components
-        logger.info("PCA concluído com sucesso")
-        return X_transformed
+
+        # Reconstruir os dados para visualização
+        X_reconstructed = (X_transformed @ principal_components.T) + media
+        
+        logger.info(f"PCA e reconstrução com {n_components} componentes concluídos com sucesso")
+        return X_reconstructed
     except Exception as e:
         raise ValueError(f"Erro ao realizar PCA: {e}")
 
