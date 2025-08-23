@@ -42,10 +42,9 @@ Siga os passos abaixo para configurar e executar o projeto em sua máquina:
 1.  **Clone o repositório:**
 
     ```bash
-    git clone https://github.com/seu-usuario/dimensionality-reduction.git
+    git clone https://github.com/marcovins/dimensionality-reduction.git
     cd dimensionality-reduction
     ```
-    *(Substitua `https://github.com/seu-usuario/dimensionality-reduction.git` pelo URL real do seu repositório.)*
 
 2.  **Crie e ative um ambiente virtual (recomendado):**
 
